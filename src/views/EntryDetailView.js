@@ -51,7 +51,9 @@ export default function EntryDetailView({ route, navigation }) {
     setIsLiked((prev) => !prev);
   }
 
-  const navigateToProfile = () => navigation.navigate("Profile");
+  // Navega al perfil a través del tab principal, desde cualquier punto del stack
+  const navigateToProfile = () =>
+    navigation.navigate("MainTabs", { screen: "Profile" });
 
   // El contenido que aparece antes de la lista de comentarios
   const headerContent = (

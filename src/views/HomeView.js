@@ -1,11 +1,13 @@
 import {
   ActivityIndicator,
   FlatList,
+  Pressable,
   StyleSheet,
   Text,
-  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useEffect } from "react";
+import { Ionicons } from "@expo/vector-icons";
 
 import FeedEntry from "../ui/widgets/FeedEntry";
 import HighlightReel from "../ui/widgets/HighlightReel";
@@ -31,6 +33,24 @@ function ErrorState({ message }) {
 
 // Vista principal del feed: muestra historias arriba y publicaciones abajo
 export default function HomeView({ navigation, posts, loading, error }) {
+  // Accede al Stack navigator padre para restaurar su título al volver al tab Home
+  const stackNav = navigation.getParent();
+
+  // Restaura el header de Instagram al volver al tab Home
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      stackNav?.setOptions({
+        title: "Instagram",
+        headerRight: () => (
+          <Pressable hitSlop={8}>
+            <Ionicons name="paper-plane-outline" size={26} color="#262626" />
+          </Pressable>
+        ),
+      });
+    });
+    return unsubscribe;
+  }, [navigation, stackNav]);
+
   if (loading) return <LoadingState />;
   if (error) return <ErrorState message={error} />;
 
