@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -6,6 +7,7 @@ import LookupView from "../views/LookupView";
 import DiscoverView from "../views/DiscoverView";
 import ClipsView from "../views/ClipsView";
 import UserProfileView from "../views/UserProfileView";
+import { LikesContext } from "../context/LikesContext";
 
 const BottomTab = createBottomTabNavigator();
 
@@ -24,8 +26,12 @@ function resolveIcon(routeName, focused) {
   return focused ? entry.active : entry.inactive;
 }
 
-// Barra de pestañas inferior con las cinco secciones principales
+// Barra de pestañas inferior con las cinco secciones principales.
+// Muestra en el tab de Perfil un badge con la cantidad de publicaciones
+// a las que el usuario dio like, leyendo el dato desde el Context global.
 export default function TabBar({ posts, loading, error }) {
+  const { likedIds } = useContext(LikesContext);
+
   return (
     <BottomTab.Navigator
       screenOptions={({ route }) => ({
@@ -60,7 +66,10 @@ export default function TabBar({ posts, loading, error }) {
       <BottomTab.Screen name="Explore" component={DiscoverView} />
       <BottomTab.Screen name="Reels" component={ClipsView} />
 
-      <BottomTab.Screen name="Profile">
+      <BottomTab.Screen
+        name="Profile"
+        options={{ tabBarBadge: likedIds.length > 0 ? likedIds.length : undefined }}
+      >
         {(props) => <UserProfileView {...props} posts={posts} />}
       </BottomTab.Screen>
     </BottomTab.Navigator>

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useContext } from "react";
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import InteractionRow from "./InteractionRow";
+import { LikesContext } from "../../context/LikesContext";
 
 // Encabezado de la publicación: avatar, usuario, ubicación y menú
 function EntryHeader({ avatarUri, username, location }) {
@@ -18,14 +19,14 @@ function EntryHeader({ avatarUri, username, location }) {
   );
 }
 
-// Tarjeta completa de una publicación en el feed
+// Tarjeta completa de una publicación en el feed.
+// Lee y modifica el estado de like desde el Context global.
 export default function FeedEntry({ post, onOpenPost }) {
-  const [liked, setLiked] = useState(false);
+  const { isLiked, toggleLike } = useContext(LikesContext);
+  const liked = isLiked(post.id);
 
-  // El contador de likes refleja el estado local del botón
+  // El contador refleja el estado global del like
   const displayLikes = liked ? post.likes + 1 : post.likes;
-
-  const toggleLike = () => setLiked((prev) => !prev);
 
   return (
     <View style={styles.card}>
@@ -45,7 +46,7 @@ export default function FeedEntry({ post, onOpenPost }) {
 
       <InteractionRow
         isLiked={liked}
-        onToggleLike={toggleLike}
+        onToggleLike={() => toggleLike(post.id)}
         onOpenComments={onOpenPost}
       />
 

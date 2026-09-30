@@ -32,6 +32,9 @@ Escaneá el código QR que aparece en la terminal con la app Expo Go para ver la
 
 ```
 src/
+├── context/
+│   └── LikesContext.js    # Context global de "me gusta": likedIds, toggleLike, isLiked
+│
 ├── routing/
 │   ├── RootNavigator.js   # Navegador raíz (Stack) + carga de datos desde la API
 │   └── TabBar.js          # Barra de pestañas inferior con las 5 secciones
@@ -62,7 +65,7 @@ src/
 ## Componentes principales y uso de props
 
 ### `FeedEntry`
-Representa una publicación completa en el scroll principal. Recibe el objeto `post` completo y una función `onOpenPost` para navegar al detalle. Gestiona internamente el estado de like con `useState`.
+Representa una publicación completa en el scroll principal. Recibe el objeto `post` completo y una función `onOpenPost` para navegar al detalle. Lee y modifica el estado de like desde `LikesContext` mediante `useContext`.
 
 ### `InteractionRow`
 Barra de botones de interacción reutilizable. Acepta `isLiked` (booleano), `onToggleLike` (función) y `onOpenComments` (función). Es usada tanto en `FeedEntry` como en `EntryDetailView`.
@@ -85,9 +88,7 @@ Imagen cuadrada de tamaño `pantalla / 3` para la grilla del perfil. Recibe `pos
 | `RootNavigator.js` | `postList` | Lista de publicaciones obtenidas de la API |
 | `RootNavigator.js` | `isFetching` | Controla el indicador de carga |
 | `RootNavigator.js` | `fetchError` | Almacena el mensaje de error si la petición falla |
-| `FeedEntry.js` | `liked` | Estado local de me gusta por tarjeta |
-| `EntryDetailView.js` | `isLiked` | Estado de me gusta en la vista de detalle |
-| `EntryDetailView.js` | `likeCount` | Contador numérico de likes actualizado en tiempo real |
+| `LikesContext.js` | `likedIds` | Lista global de IDs de publicaciones con like activo |
 
 ---
 
@@ -107,6 +108,29 @@ RootNavigator (Stack)
 ```
 
 La carga de datos ocurre en `RootNavigator` dentro de un `useEffect` con cleanup. Los posts se pasan hacia abajo por props hasta `HomeView` y `UserProfileView`. Al tocar una publicación en cualquiera de las dos pantallas, se navega a `EntryDetailView` enviando el objeto `post` como parámetro.
+
+---
+
+## React Context
+
+**1. Datos compartidos:** IDs de las publicaciones con "me gusta" (`likedIds`)
+y las funciones `toggleLike` e `isLiked`.
+
+**2. Archivo del Context:** `src/context/LikesContext.js`
+
+**3. Provider ubicado en:** `App.js`, envolviendo a `RootNavigator`.
+
+**4. Componentes que consumen el Context con `useContext`:**
+- `src/ui/widgets/FeedEntry.js`: da y quita el like desde el feed.
+- `src/views/EntryDetailView.js`: muestra y modifica el like en el detalle.
+- `src/routing/TabBar.js`: muestra en el tab de Perfil la cantidad de likes dados.
+
+**5. Justificación técnica:** el estado de "me gusta" estaba duplicado en
+`FeedEntry` y `EntryDetailView`, por lo que un like dado en el feed no se
+reflejaba al abrir el detalle. Además, la `TabBar` necesita conocer ese dato
+y está en otra rama del árbol de navegación. Con Context, todos leen y
+modifican una única fuente de verdad sin pasar props por Stack → Tabs →
+Vistas → Widgets ni sincronizar estados manualmente.
 
 ---
 

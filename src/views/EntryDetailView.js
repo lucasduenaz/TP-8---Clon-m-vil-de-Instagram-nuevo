@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext } from "react";
 import {
   FlatList,
   Image,
@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import InteractionRow from "../ui/widgets/InteractionRow";
+import { LikesContext } from "../context/LikesContext";
 
 // Encabezado del detalle: avatar, usuario y ubicación con navegación al perfil
 function DetailHeader({ post, onGoToProfile }) {
@@ -39,17 +40,15 @@ function TagList({ tags }) {
   );
 }
 
-// Vista extendida de una publicación con imagen grande, comentarios y like interactivo
+// Vista extendida de una publicación con imagen grande, comentarios y like interactivo.
+// Lee y modifica el estado de like desde el Context global, de modo que el like
+// dado aquí se refleja en el feed y viceversa.
 export default function EntryDetailView({ route, navigation }) {
   const { post } = route.params;
 
-  const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post.likes);
-
-  function toggleLike() {
-    setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
-    setIsLiked((prev) => !prev);
-  }
+  const { isLiked, toggleLike } = useContext(LikesContext);
+  const liked = isLiked(post.id);
+  const likeCount = liked ? post.likes + 1 : post.likes;
 
   // Navega al perfil a través del tab principal, desde cualquier punto del stack
   const navigateToProfile = () =>
@@ -63,8 +62,8 @@ export default function EntryDetailView({ route, navigation }) {
       <Image source={{ uri: post.image }} style={styles.mainImage} />
 
       <InteractionRow
-        isLiked={isLiked}
-        onToggleLike={toggleLike}
+        isLiked={liked}
+        onToggleLike={() => toggleLike(post.id)}
         onOpenComments={null}
       />
 
